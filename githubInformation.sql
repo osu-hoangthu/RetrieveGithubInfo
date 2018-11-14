@@ -1,13 +1,22 @@
-DROP TABLE IF EXISTS `Github_Info`;
+DROP TABLE IF EXISTS `GithubInfo`;
+DROP TABLE IF EXISTS `commitMsg`;
 
-CREATE TABLE Github_Info(
-    `github_name` varchar(256) NOT NULL,
-    `commits` int(11), 
-    `branches` int(11),
-    `releases` int(11),
-    `contributors` int(11),
-    `watch` int(11),
-    `star` int(11),
-    `fork` int(11),
-    UNIQUE  KEY(`github_name`)
+CREATE TABLE GithubInfo (
+    `githubName` VARCHAR(256) NOT NULL,
+    `commits` INT(11), 
+    `branches` INT(11),
+    `releases` INT(11),
+    `contributors` INT(11),
+    `watch` INT(11),
+    `star` INT(11),
+    `fork` INT(11),
+    UNIQUE  KEY(`githubName`)
+) ENGINE = INNODB;
+
+CREATE TABLE commitMsg (
+    `SHA` VARCHAR(256) NOT NULL,
+    `user` VARCHAR(256),
+    `date` VARCHAR(356),
+    `commitMessage` VARCHAR(256)
+    UNIQUE KEY(`SHA`)
 ) ENGINE = INNODB;
