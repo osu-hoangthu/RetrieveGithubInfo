@@ -4,7 +4,7 @@ import sys
 DEBUG = 1
 
 if  len(sys.argv) <= 1:
-    print("No link given")
+    print("No repository given")
     exit()
 
 githubRepo =  str(sys.argv[1])
@@ -46,7 +46,7 @@ if DEBUG:
         print("\t" + licenseName)
     print("\tlatest commit: " + pushedDate)
 
-commitsLink = "https://api.github.com/repos/" + githubRepo + "/commits"
+commitsLink = githublink + "/commits"
 print("github commit link: " + commitsLink)
 
 with urllib.request.urlopen(commitsLink) as url:
@@ -73,5 +73,33 @@ if DEBUG:
     print("\tcommit messages: " + str(commitMsg))
     print("\tdate: " + str(commitDates))
 
+issueLink = githublink + "/issues"
+print(issueLink)
+
+with urllib.request.urlopen(issueLink) as url:
+    issueData = json.loads(url.read().decode())
+
+numIssues = len(issueData)
+i = 0
+issueBody = []
+issueTitle = []
+dateIssueCreated = []
+issueID = []
+issueAuthor = []
+
+for i in range(numIssues):
+    issueAuthor.append(issueData[i]['user']['login'])
+    issueID.append(issueData[i]['node_id'])
+    dateIssueCreated.append(issueData[i]['created_at'])
+    issueTitle.append(issueData[i]['title'])
+    issueBody.append(issueData[i]['body'])
+
+if DEBUG:
+    print("\tnumber of issues: " + str(numIssues))
+    print("\tissue author: " + str(issueAuthor))
+    print("\tissueID: " + str(issueID))
+    print("\tcreated at: " + str(dateIssueCreated))
+    #print("\tissue body: " + str(issueBody))
+    print("\tIssue title: " + str(issueTitle))
 
 print("done")
