@@ -1,7 +1,9 @@
 import urllib.request, json
 import sys
+import csv
 
-DEBUG = 1
+DEBUG = 0 #allows to see output of all information
+WRITE = 1 #locks/unlocks the ability to write it into .csv files
 
 if  len(sys.argv) <= 1:
     print("No repository given")
@@ -11,7 +13,8 @@ githubRepo =  str(sys.argv[1])
 
 githublink = "https://api.github.com/repos/" + githubRepo
 
-print("concatenated githublink: " + githublink)
+if DEBUG:
+    print("concatenated githublink: " + githublink)
 
 with urllib.request.urlopen(githublink) as url:
     data = json.loads(url.read().decode())
@@ -25,11 +28,13 @@ numWatchers = data['watchers_count']
 numForks = data['forks_count']
 numIssues = data['open_issues']
 license = data['license']
-hasLicense = False
-githubURL = data['url']
-if str(license) is None:
-    hasLicense = True
+hasLicense = True
+if license is None:
+    hasLicense = False
+    licenseName = "None"
+else:
     licenseName = data['license']['name']
+githubURL = data['url']
 pushedDate = data['pushed_at']
 
 if DEBUG:
@@ -43,11 +48,12 @@ if DEBUG:
     print("\tnumber of issues: " + str(numIssues))
     print("\turl: " + githubURL)
     if hasLicense:
-        print("\t" + licenseName)
+        print("\tLisense:" + licenseName)
     print("\tlatest commit: " + pushedDate)
 
 commitsLink = githublink + "/commits"
-print("github commit link: " + commitsLink)
+if DEBUG:
+    print("github commit link: " + commitsLink)
 
 with urllib.request.urlopen(commitsLink) as url:
     commitData = json.loads(url.read().decode())
@@ -74,7 +80,8 @@ if DEBUG:
     print("\tdate: " + str(commitDates))
 
 issueLink = githublink + "/issues"
-print(issueLink)
+if DEBUG:
+    print(issueLink)
 
 with urllib.request.urlopen(issueLink) as url:
     issueData = json.loads(url.read().decode())
@@ -99,7 +106,30 @@ if DEBUG:
     print("\tissue author: " + str(issueAuthor))
     print("\tissueID: " + str(issueID))
     print("\tcreated at: " + str(dateIssueCreated))
-    #print("\tissue body: " + str(issueBody))
     print("\tIssue title: " + str(issueTitle))
 
-print("done")
+#general information
+if WRITE:
+    with open('githubInformation.csv', mode='w') as githubFile:
+        githubWriter = csv.writer(githubFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        githubWriter.writerow(['Github Name', 'Node ID', 'URL', 'Date of Creation', 'Date Updated', 'Number of Stars', 'Number of Watchers', 'Number of Forks', 'Number of Issues', 'Number of Commits', 'Number of Issues', 'License'])
+        githubWriter.writerow([name, id, githubURL, creationDate, updateDate, str(numStars), str(numWatchers), str(numForks), numIssues, numCommits, numIssues, licenseName])
+
+#commit information
+if WRITE:
+    i = 0
+    with open('githubCommitInformation.csv', mode='w') as commitFile:
+        commitWriter = csv.writer(commitFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        commitWriter.writerow(['Commit SHA', 'Author', 'Commit Message', 'Date of Commit'])
+        for i in range(numCommits):
+            commitWriter.writerow([commitSHA[i], authors[i], commitMsg[i], commitDates[i]])
+            i+=1
+
+#issue information
+if WRITE:
+    i = 0
+    with open('githubIssueInformation.csv', mode='w') as issueFile:
+        issueWriter = csv.writer(issueFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        issueWriter.writerow(['Issue ID', 'Issue Title' 'Issue Author', 'Issue Body', 'Created At'])
+        for i in range(numIssues):
+            issueWriter.writerow([issueID[i], issueTitle[i], issueAuthor[i], issueBody[i].encode("utf-8"), dateIssueCreated[i]])
