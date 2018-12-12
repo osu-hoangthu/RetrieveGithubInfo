@@ -2,8 +2,8 @@ import urllib.request, json
 import sys
 import csv
 
-DEBUG = 0 #allows to see output of all information
-WRITE = 1 #locks/unlocks the ability to write it into .csv files
+DEBUG = 1 #allows to see output of all information
+WRITE = 0 #locks/unlocks the ability to write it into .csv files
 
 if  len(sys.argv) <= 1:
     print("No repository given")
@@ -36,6 +36,7 @@ else:
     licenseName = data['license']['name']
 githubURL = data['url']
 pushedDate = data['pushed_at']
+numIssues = data['open_issues_count']
 
 if DEBUG:
     print("\tname: " + name)
@@ -79,14 +80,14 @@ if DEBUG:
     print("\tcommit messages: " + str(commitMsg))
     print("\tdate: " + str(commitDates))
 
-issueLink = githublink + "/issues"
+issueLink = githublink + "/issues?per_page=100"
 if DEBUG:
     print(issueLink)
 
 with urllib.request.urlopen(issueLink) as url:
     issueData = json.loads(url.read().decode())
 
-numIssues = len(issueData)
+
 i = 0
 issueBody = []
 issueTitle = []
@@ -95,6 +96,8 @@ issueID = []
 issueAuthor = []
 
 for i in range(numIssues):
+    if DEBUG:
+            print(i)
     issueAuthor.append(issueData[i]['user']['login'])
     issueID.append(issueData[i]['node_id'])
     dateIssueCreated.append(issueData[i]['created_at'])
@@ -107,6 +110,24 @@ if DEBUG:
     print("\tissueID: " + str(issueID))
     print("\tcreated at: " + str(dateIssueCreated))
     print("\tIssue title: " + str(issueTitle))
+
+releaseLink = githublink + "/releases"
+if DEBUG:
+    print(releaseLink)
+
+releaseData = []
+releaseAuthors = []
+releaseName = []
+releaseNodeID = []
+releaseNumber = []
+hasReleases = True
+
+with urllib.request.urlopen(releaseLink) as url:
+    releaseData = json.loads(url.read().decode())
+
+if len(releaseData) == 0:
+    hasReleases = False
+
 
 #general information
 if WRITE:
