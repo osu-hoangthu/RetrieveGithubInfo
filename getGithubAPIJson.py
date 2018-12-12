@@ -121,6 +121,7 @@ releaseName = []
 releaseNodeID = []
 releaseNumber = []
 hasReleases = True
+releasePublishDate = []
 
 with urllib.request.urlopen(releaseLink) as url:
     releaseData = json.loads(url.read().decode())
@@ -128,6 +129,12 @@ with urllib.request.urlopen(releaseLink) as url:
 if len(releaseData) == 0:
     hasReleases = False
 
+if hasReleases:
+    releaseAuthors.append(releaseData[i]['author']['login'])
+    releaseName.append(releaseData[i]['name'])
+    releaseNodeID.append(releaseData[i]['node_id'])
+    releaseNumber.append(releaseData[i]['id'])
+    releasePublishDate.append(releaseData[i]['published_at'])
 
 #general information
 if WRITE:
