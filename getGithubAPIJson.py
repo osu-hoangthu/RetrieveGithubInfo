@@ -96,8 +96,6 @@ issueID = []
 issueAuthor = []
 
 for i in range(numIssues):
-    if DEBUG:
-            print(i)
     issueAuthor.append(issueData[i]['user']['login'])
     issueID.append(issueData[i]['node_id'])
     dateIssueCreated.append(issueData[i]['created_at'])
@@ -111,10 +109,11 @@ if DEBUG:
     print("\tcreated at: " + str(dateIssueCreated))
     print("\tIssue title: " + str(issueTitle))
 
-releaseLink = githublink + "/releases"
+releaseLink = githublink + "/releases?per_page=100"
 if DEBUG:
     print(releaseLink)
 
+i = 0
 releaseData = []
 releaseAuthors = []
 releaseName = []
@@ -161,3 +160,6 @@ if WRITE:
         issueWriter.writerow(['Issue ID', 'Issue Title' 'Issue Author', 'Issue Body', 'Created At'])
         for i in range(numIssues):
             issueWriter.writerow([issueID[i], issueTitle[i], issueAuthor[i], issueBody[i].encode("utf-8"), dateIssueCreated[i]])
+
+#release information
+#if WRITE && hasReleases:
