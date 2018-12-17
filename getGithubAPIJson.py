@@ -2,8 +2,8 @@ import urllib.request, json
 import sys
 import csv
 
-DEBUG = 1 #allows to see output of all information
-WRITE = 0 #locks/unlocks the ability to write it into .csv files
+DEBUG = 0 #allows to see output of all information
+WRITE = 1 #locks/unlocks the ability to write it into .csv files
 
 if  len(sys.argv) <= 1:
     print("No repository given")
@@ -80,35 +80,43 @@ if DEBUG:
     print("\tcommit messages: " + str(commitMsg))
     print("\tdate: " + str(commitDates))
 
-issueLink = githublink + "/issues?per_page=100"
+issueLink = githublink + "/issues?page=1"
 if DEBUG:
     print(issueLink)
 
 with urllib.request.urlopen(issueLink) as url:
     issueData = json.loads(url.read().decode())
 
-
-i = 0
 issueBody = []
 issueTitle = []
 dateIssueCreated = []
 issueID = []
 issueAuthor = []
+issuePageIncrement = 2 #this variable is used to traverse the pages for issues
 
-for i in range(numIssues):
-    issueAuthor.append(issueData[i]['user']['login'])
-    issueID.append(issueData[i]['node_id'])
-    dateIssueCreated.append(issueData[i]['created_at'])
-    issueTitle.append(issueData[i]['title'])
-    issueBody.append(issueData[i]['body'])
+while len(issueID) != numIssues:
+    i = 0
+    while i < len(issueData):
+        issueAuthor.append(issueData[i]['user']['login'])
+        issueID.append(issueData[i]['node_id'])
+        dateIssueCreated.append(issueData[i]['created_at'])
+        issueTitle.append(issueData[i]['title'])
+        issueBody.append(issueData[i]['body'])
+        i+=1
+
+    issueLink = githublink + "/issues?page=" + str(issuePageIncrement)
+    issuePageIncrement+=1
+
+    with urllib.request.urlopen(issueLink) as url:
+        issueData = json.loads(url.read().decode())
 
 if DEBUG:
-    print("\tnumber of issues: " + str(numIssues))
+    print("\tnumber of issues found by pagination: " + str(len(issueID)))
     print("\tissue author: " + str(issueAuthor))
     print("\tissueID: " + str(issueID))
     print("\tcreated at: " + str(dateIssueCreated))
     print("\tIssue title: " + str(issueTitle))
-
+#
 releaseLink = githublink + "/releases?per_page=100"
 if DEBUG:
     print(releaseLink)
