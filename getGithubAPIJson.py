@@ -1,17 +1,35 @@
 import urllib.request, json
 import sys
 import csv
+import requests
+from urllib.request import urlopen
 
-DEBUG = 0 #allows to see output of all information
-WRITE = 1 #locks/unlocks the ability to write it into .csv files
+DEBUG = 1 #allows to see output of all information
+WRITE = 0 #locks/unlocks the ability to write it into .csv files
 
-if  len(sys.argv) <= 1:
-    print("No repository given")
+if len(sys.argv) < 3:
+    print("Not enough information given")
     exit()
 
 githubRepo =  str(sys.argv[1])
+username = str(sys.argv[2])
+numToken = int(sys.argv[3])
+
+tokenList = []
+
+i = 0
+for i in range(numToken):
+    token = input("Token " + str(i + 1) + ": ")
+    tokenList.append(token)
+
+testHeader = {'Authorization: token ' + str(tokenList[0])}
+
+if DEBUG:
+    print("Token List: " + str(tokenList))
 
 githublink = "https://api.github.com/repos/" + githubRepo
+
+r = requests.get(githublink, header=testHeader)
 
 if DEBUG:
     print("concatenated githublink: " + githublink)
