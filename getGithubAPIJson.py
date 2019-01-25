@@ -7,7 +7,7 @@ from urllib.request import Request, urlopen
 DEBUG = 1 #allows to see output of all information
 WRITE = 0 #locks/unlocks the ability to write it into .csv files
 
-if len(sys.argv) < 3:
+if len(sys.argv) < 2:
     print("Not enough information given")
     exit()
 
