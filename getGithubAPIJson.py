@@ -2,7 +2,7 @@ import urllib.request, json
 import sys
 import csv
 import requests
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 DEBUG = 1 #allows to see output of all information
 WRITE = 0 #locks/unlocks the ability to write it into .csv files
@@ -12,8 +12,7 @@ if len(sys.argv) < 3:
     exit()
 
 githubRepo =  str(sys.argv[1])
-username = str(sys.argv[2])
-numToken = int(sys.argv[3])
+numToken = int(sys.argv[2])
 
 tokenList = []
 
@@ -22,19 +21,17 @@ for i in range(numToken):
     token = input("Token " + str(i + 1) + ": ")
     tokenList.append(token)
 
-testHeader = {'Authorization: token ' + str(tokenList[0])}
+testHeader = {'Authorization': token  + str(tokenList[0])}
 
 if DEBUG:
     print("Token List: " + str(tokenList))
 
 githublink = "https://api.github.com/repos/" + githubRepo
 
-r = requests.get(githublink, header=testHeader)
-
 if DEBUG:
     print("concatenated githublink: " + githublink)
 
-with urllib.request.urlopen(githublink) as url:
+with urlopen(Request(githublink, data=None, headers=testHeader, origin_req_host=None, unverifiable=False, method=None)) as url:
     data = json.loads(url.read().decode())
 
 name = data['name']
@@ -54,7 +51,7 @@ else:
     licenseName = data['license']['name']
 githubURL = data['url']
 pushedDate = data['pushed_at']
-numIssues = data['open_issues_count']
+numIssues = data['open_issues_count'] 
 
 if DEBUG:
     print("\tname: " + name)
@@ -74,7 +71,7 @@ commitsLink = githublink + "/commits"
 if DEBUG:
     print("github commit link: " + commitsLink)
 
-with urllib.request.urlopen(commitsLink) as url:
+with urllib.request.urlopen(Request(commitsLink, data=None, headers=testHeader, origin_req_host=None, unverifiable=False, method=None)) as url:
     commitData = json.loads(url.read().decode())
 
 numCommits = len(commitData)
@@ -102,7 +99,7 @@ issueLink = githublink + "/issues?page=1"
 if DEBUG:
     print(issueLink)
 
-with urllib.request.urlopen(issueLink) as url:
+with urllib.request.urlopen(Request(issueLink, data=None, headers=testHeader, origin_req_host=None, unverifiable=False, method=None)) as url:
     issueData = json.loads(url.read().decode())
 
 issueBody = []
@@ -148,7 +145,7 @@ releaseNumber = []
 hasReleases = True
 releasePublishDate = []
 
-with urllib.request.urlopen(releaseLink) as url:
+with urllib.request.urlopen(Request(releaseLink, data=None, headers=testHeader, origin_req_host=None, unverifiable=False, method=None)) as url:
     releaseData = json.loads(url.read().decode())
 
 if len(releaseData) == 0:
