@@ -9,4 +9,4 @@ This repository is originally made to help Assistant Professor Shaokun Fan with 
 `git clone https://github.com/osu-hoangthu/RetrieveGithubInfo.git`
 2) Run the command:
 `python getGithubAPIJson.py <Github-User>/<Repository-Name> <Number of Github Tokens>`
-Note: without designating the Github username, number of tokens, and the Repository name, the program will not get any information. Instead it will print out `No Github Information given.` and will exit the program wihtout making any GET calls.
+Note: without designating the Github username, number of tokens, and the Repository name, the program will not get any information. Instead it will print out `Not enough information given.` and will exit the program without making any calls or creating .csv files.
