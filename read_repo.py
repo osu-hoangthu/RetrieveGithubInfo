@@ -4,14 +4,10 @@ from pygit2 import clone_repository
 
 def print_commit(commit):
     print('----')
-    print(str(commit.hexsha))
-    print("\"{}\" by {} ({})".format(commit.summary,
-                                     commit.author.name,
-                                     commit.author.email))
-    print(str(commit.authored_datetime))
-    print(str("count: {} and size: {}".format(commit.count(),
-                                              commit.size)))
-
+    print(str(commit.hexsha).encode("utf-8"))
+    print("\"{}\" by {} ({})".format(commit.summary, commit.author.name, commit.author.email).encode("utf-8"))
+    print(str(commit.authored_datetime).encode("utf-8"))
+    print(str("count: {} and size: {}".format(commit.count(), commit.size)))
 
 def print_repository(repo):
     print('Repo description: {}'.format(repo.description))
@@ -20,25 +16,7 @@ def print_repository(repo):
         print('Remote named "{}" with URL "{}"'.format(remote, remote.url))
     print('Last commit for repo is {}.'.format(str(repo.head.commit.hexsha)))
 
-# def changeDir(directory):
-#     print("directory cloned: " + directory)
-#     subprocess.call(["cd", directory])
-
-# def cloneRepository():
-#     if len(sys.argv) < 2:
-#         print("No Github repository given")
-#         exit()
-
-#     githubRepo =  str(sys.argv[1])
-#     repoList = githubRepo.split("/")
-#     directory = str(repoList[1])
-#     githublink = "https://github.com/" + githubRepo
-#     repo = clone_repository(githublink, directory, bare=False)
-#     changeDir(directory)
-
-
 if __name__ == "__main__":
-    #cloneRepository()
     repo_path = os.getenv('GIT_REPO_PATH')
     # Repo object used to programmatically interact with Git repositories
     repo = Repo(repo_path)
