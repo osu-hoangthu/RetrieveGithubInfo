@@ -1,33 +1,18 @@
-import os, subprocess, pygit2, sys, git
+import os, subprocess, pygit2, sys, git, csv
 from git import Repo
 from pygit2 import clone_repository
 
-def print_commit(commit):
-    print('----')
-    print(str(commit.hexsha).encode("utf-8"))
-    print("\"{}\" by {} ({})".format(commit.summary, commit.author.name, commit.author.email).encode("utf-8"))
-    print(str(commit.authored_datetime).encode("utf-8"))
-    print(str("count: {} and size: {}".format(commit.count(), commit.size)))
-
-def print_repository(repo):
-    print('Repo description: {}'.format(repo.description))
-    print('Repo active branch is {}'.format(repo.active_branch))
-    for remote in repo.remotes:
-        print('Remote named "{}" with URL "{}"'.format(remote, remote.url))
-    print('Last commit for repo is {}.'.format(str(repo.head.commit.hexsha)))
-
 if __name__ == "__main__":
     repo_path = os.getenv('GIT_REPO_PATH')
-    # Repo object used to programmatically interact with Git repositories
     repo = Repo(repo_path)
-    # check that the repository loaded correctly
     if not repo.bare:
         print('Repo at {} successfully loaded.'.format(repo_path))
-        print_repository(repo)
-        # create list of commits then print some of them to stdout
         commits = list(repo.iter_commits('master'))
-        for commit in commits:
-            print_commit(commit)
-            pass
+        with open('githubCommitInformation.csv', mode='w+') as commitFile:
+                commitWriter = csv.writer(commitFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                commitWriter.writerow(['Commit SHA', 'Author', 'Commit Message', 'Date of Commit'])
+                for commit in commits:
+                    commitWriter.writerow([str(commit.hexsha).encode("utf-8"), format(commit.author.name).encode("utf-8"), format(commit.summary).encode("utf-8"), str(commit.authored_datetime).encode("utf-8")])
+                    pass
     else:
         print('Could not load repository at {} :('.format(repo_path))
