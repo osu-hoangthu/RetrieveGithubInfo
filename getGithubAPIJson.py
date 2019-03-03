@@ -67,34 +67,6 @@ if DEBUG:
         print("\tLisense:" + licenseName)
     print("\tlatest commit: " + pushedDate)
 
-commitsLink = githublink + "/commits"
-if DEBUG:
-    print("github commit link: " + commitsLink)
-
-with urllib.request.urlopen(Request(commitsLink, data=None, headers=testHeader, origin_req_host=None, unverifiable=False, method=None)) as url:
-    commitData = json.loads(url.read().decode())
-
-numCommits = len(commitData)
-commitSHA = []
-authors = []
-commitMsg = []
-commitDates = []
-i = 0
-
-for i in range(numCommits):
-    commitSHA.append(commitData[i]['sha'])
-    authors.append(commitData[i]['commit']['author']['name'])
-    commitMsg.append(commitData[i]['commit']['message'])
-    commitDates.append(commitData[i]['commit']['author']['date'])
-    i += 1
-
-if DEBUG:
-    print("\tnumber of commits: " + str(numCommits))
-    print("\tSha:" + str(commitSHA))
-    print("\tAuthor: " + str(authors))
-    print("\tcommit messages: " + str(commitMsg))
-    print("\tdate: " + str(commitDates))
-
 issueLink = githublink + "/issues?page=1"
 if DEBUG:
     print(issueLink)
@@ -161,25 +133,15 @@ if hasReleases:
 #general information
 if WRITE:
     with open('githubInformation.csv', mode='w') as githubFile:
-        githubWriter = csv.writer(githubFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        githubWriter = csv.writer(githubFile, delimiter=',', quotechar='"', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
         githubWriter.writerow(['Github Name', 'Node ID', 'URL', 'Date of Creation', 'Date Updated', 'Number of Stars', 'Number of Watchers', 'Number of Forks', 'Number of Issues', 'Number of Commits', 'Number of Issues', 'License'])
         githubWriter.writerow([name, id, githubURL, creationDate, updateDate, str(numStars), str(numWatchers), str(numForks), numIssues, numCommits, numIssues, licenseName])
-
-#commit information
-if WRITE:
-    i = 0
-    with open('githubCommitInformation.csv', mode='w') as commitFile:
-        commitWriter = csv.writer(commitFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        commitWriter.writerow(['Commit SHA', 'Author', 'Commit Message', 'Date of Commit'])
-        for i in range(numCommits):
-            commitWriter.writerow([commitSHA[i], authors[i], commitMsg[i], commitDates[i]])
-            i+=1
 
 #issue information
 if WRITE:
     i = 0
     with open('githubIssueInformation.csv', mode='w') as issueFile:
-        issueWriter = csv.writer(issueFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        issueWriter = csv.writer(issueFile, delimiter=',', quotechar='"', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
         issueWriter.writerow(['Issue ID', 'Issue Title' 'Issue Author', 'Issue Body', 'Created At'])
         for i in range(numIssues):
             issueWriter.writerow([issueID[i], issueTitle[i], issueAuthor[i], issueBody[i].encode("utf-8"), dateIssueCreated[i]])

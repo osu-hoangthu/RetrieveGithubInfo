@@ -9,10 +9,12 @@ if __name__ == "__main__":
         print('Repo at {} successfully loaded.'.format(repo_path))
         commits = list(repo.iter_commits('master'))
         with open('githubCommitInformation.csv', mode='w+') as commitFile:
-                commitWriter = csv.writer(commitFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                commitWriter.writerow(['Commit SHA', 'Author', 'Commit Message', 'Date of Commit'])
+                commitWriter = csv.writer(commitFile, delimiter=',', quotechar='"', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
+                commitWriter.writerow(['Commit SHA', 'Author', 'Commit Message', 'Date of Commit', 'Count', 'Size'])
                 for commit in commits:
-                    commitWriter.writerow([str(commit.hexsha).encode("utf-8"), format(commit.author.name).encode("utf-8"), format(commit.summary).encode("utf-8"), str(commit.authored_datetime).encode("utf-8")])
+                    commitWriter.writerow([str(commit.hexsha), str(commit.author.name).encode("utf-8"), str(commit.summary).encode("utf-8"), str(commit.authored_datetime), str(commit.count()), str(commit.size)])
                     pass
     else:
         print('Could not load repository at {} :('.format(repo_path))
+
+        # todo: add count and size to csv file
