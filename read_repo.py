@@ -16,5 +16,3 @@ if __name__ == "__main__":
                     pass
     else:
         print('Could not load repository at {} :('.format(repo_path))
-
-        # todo: add count and size to csv file
