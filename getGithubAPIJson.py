@@ -4,8 +4,8 @@ import csv
 import requests
 from urllib.request import Request, urlopen
 
-DEBUG = 1 #allows to see output of all information
-WRITE = 0 #locks/unlocks the ability to write it into .csv files
+DEBUG = 0 #allows to see output of all information
+WRITE = 1 #locks/unlocks the ability to write it into .csv files
 
 if len(sys.argv) < 2:
     print("Not enough information given")
@@ -134,17 +134,17 @@ if hasReleases:
 if WRITE:
     with open('githubInformation.csv', mode='w') as githubFile:
         githubWriter = csv.writer(githubFile, delimiter=',', quotechar='"', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
-        githubWriter.writerow(['Github Name', 'Node ID', 'URL', 'Date of Creation', 'Date Updated', 'Number of Stars', 'Number of Watchers', 'Number of Forks', 'Number of Issues', 'Number of Commits', 'Number of Issues', 'License'])
-        githubWriter.writerow([name, id, githubURL, creationDate, updateDate, str(numStars), str(numWatchers), str(numForks), numIssues, numCommits, numIssues, licenseName])
+        githubWriter.writerow(['Github Name', 'Node ID', 'URL', 'Date of Creation', 'Date Updated', 'Number of Stars', 'Number of Watchers', 'Number of Forks', 'Number of Issues', 'Number of Issues', 'License'])
+        githubWriter.writerow([name, id, githubURL, creationDate, updateDate, str(numStars), str(numWatchers), str(numForks), numIssues, numIssues, licenseName])
 
 #issue information
 if WRITE:
     i = 0
     with open('githubIssueInformation.csv', mode='w') as issueFile:
         issueWriter = csv.writer(issueFile, delimiter=',', quotechar='"', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
-        issueWriter.writerow(['Issue ID', 'Issue Title' 'Issue Author', 'Issue Body', 'Created At'])
+        issueWriter.writerow(['Repository','Issue ID', 'Issue Title' 'Issue Author', 'Issue Body', 'Created At'])
         for i in range(numIssues):
-            issueWriter.writerow([issueID[i], issueTitle[i], issueAuthor[i], issueBody[i].encode("utf-8"), dateIssueCreated[i]])
+            issueWriter.writerow([name, issueID[i], issueTitle[i].encode("utf-8"), issueAuthor[i], issueBody[i].encode("utf-8"), dateIssueCreated[i]])
 
 #release information
 #if WRITE && hasReleases:
