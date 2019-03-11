@@ -122,6 +122,8 @@ with urllib.request.urlopen(Request(releaseLink, data=None, headers=testHeader, 
 
 if len(releaseData) == 0:
     hasReleases = False
+else:
+    numRelease = len(releaseData)
 
 if hasReleases:
     releaseAuthors.append(releaseData[i]['author']['login'])
@@ -134,8 +136,8 @@ if hasReleases:
 if WRITE:
     with open('githubInformation.csv', mode='w') as githubFile:
         githubWriter = csv.writer(githubFile, delimiter=',', quotechar='"', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
-        githubWriter.writerow(['Github Name', 'Node ID', 'URL', 'Date of Creation', 'Date Updated', 'Number of Stars', 'Number of Watchers', 'Number of Forks', 'Number of Issues', 'Number of Issues', 'License'])
-        githubWriter.writerow([name, id, githubURL, creationDate, updateDate, str(numStars), str(numWatchers), str(numForks), numIssues, numIssues, licenseName])
+        githubWriter.writerow(['Github Name', 'Node ID', 'URL', 'Date of Creation', 'Date Updated', 'Number of Stars', 'Number of Watchers', 'Number of Forks', 'Number of Issues', 'Number of Issues', 'Number of Releases', 'License'])
+        githubWriter.writerow([name, id, githubURL, creationDate, updateDate, str(numStars), str(numWatchers), str(numForks), numIssues, numIssues, numRelease, licenseName])
 
 #issue information
 if WRITE:
@@ -147,4 +149,12 @@ if WRITE:
             issueWriter.writerow([name, issueID[i], issueTitle[i].encode("utf-8"), issueAuthor[i], issueBody[i].encode("utf-8"), dateIssueCreated[i]])
 
 #release information
-#if WRITE && hasReleases:
+if WRITE && hasReleases:
+    i = 0
+    with open('githubReleaseInformation.csv', mode='w') as releaseFile:
+    releaseWriter = csv.writer(issueFile, delimiter=',', quotechar='"', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
+    releaseWriter.writerow(['Github Name','Node ID', 'ID', 'Author', 'Name', 'Date Published'])
+    for i in range(numRelease):
+        releaseWriter.writerow([name, releaseNodeID[i], releaseNumber[i], releaseAuthors[i], releaseName[i]], releasePublishDate[i])
+
+print("Done")
