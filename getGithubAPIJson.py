@@ -12,19 +12,9 @@ if len(sys.argv) < 2:
     exit()
 
 githubRepo =  str(sys.argv[1])
-numToken = int(sys.argv[2])
+githubToken = str(sys.argv[2])
 
-tokenList = []
-
-i = 0
-for i in range(numToken):
-    token = input("Token " + str(i + 1) + ": ")
-    tokenList.append(token)
-
-testHeader = {'Authorization': token  + str(tokenList[0])}
-
-if DEBUG:
-    print("Token List: " + str(tokenList))
+testHeader = {'Authorization': 'token'  + githubToken}
 
 githublink = "https://api.github.com/repos/" + githubRepo
 
@@ -103,7 +93,23 @@ if DEBUG:
     print("\tissueID: " + str(issueID))
     print("\tcreated at: " + str(dateIssueCreated))
     print("\tIssue title: " + str(issueTitle))
-        
+
+#write issue information to CSV file
+if WRITE:
+    i = 0
+    with open('githubIssueInformation.csv', mode='w') as issueFile:
+        issueWriter = csv.writer(issueFile, delimiter=',', quotechar='"', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
+        issueWriter.writerow(['Repository','Issue ID', 'Issue Title' 'Issue Author', 'Issue Body', 'Created At'])
+        for i in range(numIssues):
+            issueWriter.writerow([name, issueID[i], issueTitle[i].encode("utf-8"), issueAuthor[i], issueBody[i].encode("utf-8"), dateIssueCreated[i]])
+
+#make space for memory
+del issueID[:]
+del issueTitle[:]
+del issueAuthor[:]
+del issueBody[:]
+del dateIssueCreated[:]
+
 #releases
 releaseLink = githublink + "/releases?pages=1"
 if DEBUG:
@@ -136,6 +142,7 @@ if hasReleases:
             releaseNodeID.append(releaseData[i]['node_id'])
             releaseNumber.append(releaseData[i]['id'])
             releasePublishDate.append(releaseData[i]['published_at'])
+            i+=1
 
         releaseLink = githublink + "/releases?page=" + str(releasePageIncrement)
         releasePageIncrement+=1
@@ -143,22 +150,6 @@ if hasReleases:
         with urllib.request.urlopen(releaseLink) as url:
             releaseData = json.loads(url.read().decode())
         numRelease+=len(releaseData)
-
-#general information
-if WRITE:
-    with open('githubInformation.csv', mode='w') as githubFile:
-        githubWriter = csv.writer(githubFile, delimiter=',', quotechar='"', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
-        githubWriter.writerow(['Github Name', 'Node ID', 'URL', 'Date of Creation', 'Date Updated', 'Number of Stars', 'Number of Watchers', 'Number of Forks', 'Number of Issues', 'Number of Releases', 'License'])
-        githubWriter.writerow([name, id, githubURL, creationDate, updateDate, str(numStars), str(numWatchers), str(numForks), numIssues, str(numRelease), licenseName])
-
-#issue information
-if WRITE:
-    i = 0
-    with open('githubIssueInformation.csv', mode='w') as issueFile:
-        issueWriter = csv.writer(issueFile, delimiter=',', quotechar='"', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
-        issueWriter.writerow(['Repository','Issue ID', 'Issue Title' 'Issue Author', 'Issue Body', 'Created At'])
-        for i in range(numIssues):
-            issueWriter.writerow([name, issueID[i], issueTitle[i].encode("utf-8"), issueAuthor[i], issueBody[i].encode("utf-8"), dateIssueCreated[i]])
 
 #release information
 if WRITE and hasReleases:
@@ -168,5 +159,18 @@ if WRITE and hasReleases:
         releaseWriter.writerow(['Github Name','Node ID', 'ID', 'Author', 'Name', 'Date Published'])
         for i in range(numRelease):
             releaseWriter.writerow([name, releaseNodeID[i], releaseNumber[i], releaseAuthors[i], releaseName[i], releasePublishDate[i]])
+
+del releaseAuthors[:]
+del releaseName[:]
+del releaseNodeID[:]
+del releaseNumber[:]
+del releasePublishDate[:]
+
+#general information
+if WRITE:
+    with open('githubInformation.csv', mode='w') as githubFile:
+        githubWriter = csv.writer(githubFile, delimiter=',', quotechar='"', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
+        githubWriter.writerow(['Github Name', 'Node ID', 'URL', 'Date of Creation', 'Date Updated', 'Number of Stars', 'Number of Watchers', 'Number of Forks', 'Number of Issues', 'Number of Releases', 'License'])
+        githubWriter.writerow([name, id, githubURL, creationDate, updateDate, str(numStars), str(numWatchers), str(numForks), numIssues, str(numRelease), licenseName])
 
 print("Done")
