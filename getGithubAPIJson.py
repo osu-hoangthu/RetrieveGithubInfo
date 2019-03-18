@@ -13,10 +13,19 @@ if len(sys.argv) < 2:
 
 githubRepo =  str(sys.argv[1])
 githubToken = str(sys.argv[2])
+issueOrRelease = str(sys.argv[3])
 
 testHeader = {'Authorization': 'token'  + githubToken}
 
 githublink = "https://api.github.com/repos/" + githubRepo
+
+if issueOrRelease == "issue":
+    ISSUE = 1
+elif issueOrRelease == "release":
+    ISSUE = 0
+else:
+    print("No choice of issue or release given")
+    exit()
 
 if DEBUG:
     print("concatenated githublink: " + githublink)
@@ -42,6 +51,7 @@ else:
 githubURL = data['url']
 pushedDate = data['pushed_at']
 numIssues = data['open_issues_count'] 
+numRelease = 0
 
 if DEBUG:
     print("\tname: " + name)
@@ -57,114 +67,116 @@ if DEBUG:
         print("\tLisense:" + licenseName)
     print("\tlatest commit: " + pushedDate)
 
-issueLink = githublink + "/issues?page=1"
-if DEBUG:
-    print(issueLink)
+if ISSUE:
+    issueLink = githublink + "/issues?page=1"
+    if DEBUG:
+        print(issueLink)
 
-with urllib.request.urlopen(Request(issueLink, data=None, headers=testHeader, origin_req_host=None, unverifiable=False, method=None)) as url:
-    issueData = json.loads(url.read().decode())
-
-issueBody = []
-issueTitle = []
-dateIssueCreated = []
-issueID = []
-issueAuthor = []
-issuePageIncrement = 2 #this variable is used to traverse the pages for issues
-
-while len(issueID) != numIssues:
-    i = 0
-    while i < len(issueData):
-        issueAuthor.append(issueData[i]['user']['login'])
-        issueID.append(issueData[i]['node_id'])
-        dateIssueCreated.append(issueData[i]['created_at'])
-        issueTitle.append(issueData[i]['title'])
-        issueBody.append(issueData[i]['body'])
-        i+=1
-
-    issueLink = githublink + "/issues?page=" + str(issuePageIncrement)
-    issuePageIncrement+=1
-
-    with urllib.request.urlopen(issueLink) as url:
+    with urllib.request.urlopen(Request(issueLink, data=None, headers=testHeader, origin_req_host=None, unverifiable=False, method=None)) as url:
         issueData = json.loads(url.read().decode())
 
-if DEBUG:
-    print("\tnumber of issues found by pagination: " + str(len(issueID)))
-    print("\tissue author: " + str(issueAuthor))
-    print("\tissueID: " + str(issueID))
-    print("\tcreated at: " + str(dateIssueCreated))
-    print("\tIssue title: " + str(issueTitle))
+    issueBody = []
+    issueTitle = []
+    dateIssueCreated = []
+    issueID = []
+    issueAuthor = []
+    issuePageIncrement = 2 #this variable is used to traverse the pages for issues
 
-#write issue information to CSV file
-if WRITE:
-    i = 0
-    with open('githubIssueInformation.csv', mode='w') as issueFile:
-        issueWriter = csv.writer(issueFile, delimiter=',', quotechar='"', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
-        issueWriter.writerow(['Repository','Issue ID', 'Issue Title' 'Issue Author', 'Issue Body', 'Created At'])
-        for i in range(numIssues):
-            issueWriter.writerow([name, issueID[i], issueTitle[i].encode("utf-8"), issueAuthor[i], issueBody[i].encode("utf-8"), dateIssueCreated[i]])
-
-#make space for memory
-del issueID[:]
-del issueTitle[:]
-del issueAuthor[:]
-del issueBody[:]
-del dateIssueCreated[:]
-
-#releases
-releaseLink = githublink + "/releases?pages=1"
-if DEBUG:
-    print(releaseLink)
-
-i = 0
-releaseData = []
-releaseAuthors = []
-releaseName = []
-releaseNodeID = []
-releaseNumber = []
-hasReleases = True
-releasePublishDate = []
-releasePageIncrement = 2
-
-with urllib.request.urlopen(Request(releaseLink, data=None, headers=testHeader, origin_req_host=None, unverifiable=False, method=None)) as url:
-    releaseData = json.loads(url.read().decode())
-
-if len(releaseData) == 0:
-    hasReleases = False
-else:
-    numRelease = len(releaseData)
-
-if hasReleases:
-    while len(releaseData) != 30: 
+    while len(issueID) != numIssues:
         i = 0
-        while i < len(releaseData):
-            releaseAuthors.append(releaseData[i]['author']['login'])
-            releaseName.append(releaseData[i]['name'])
-            releaseNodeID.append(releaseData[i]['node_id'])
-            releaseNumber.append(releaseData[i]['id'])
-            releasePublishDate.append(releaseData[i]['published_at'])
+        while i < len(issueData):
+            issueAuthor.append(issueData[i]['user']['login'])
+            issueID.append(issueData[i]['node_id'])
+            dateIssueCreated.append(issueData[i]['created_at'])
+            issueTitle.append(issueData[i]['title'])
+            issueBody.append(issueData[i]['body'])
             i+=1
 
-        releaseLink = githublink + "/releases?page=" + str(releasePageIncrement)
-        releasePageIncrement+=1
+        issueLink = githublink + "/issues?page=" + str(issuePageIncrement)
+        issuePageIncrement+=1
 
-        with urllib.request.urlopen(releaseLink) as url:
-            releaseData = json.loads(url.read().decode())
-        numRelease+=len(releaseData)
+        with urllib.request.urlopen(issueLink) as url:
+            issueData = json.loads(url.read().decode())
 
-#release information
-if WRITE and hasReleases:
+    if DEBUG:
+        print("\tnumber of issues found by pagination: " + str(len(issueID)))
+        print("\tissue author: " + str(issueAuthor))
+        print("\tissueID: " + str(issueID))
+        print("\tcreated at: " + str(dateIssueCreated))
+        print("\tIssue title: " + str(issueTitle))
+
+    #write issue information to CSV file
+    if WRITE:
+        i = 0
+        with open('githubIssueInformation.csv', mode='w') as issueFile:
+            issueWriter = csv.writer(issueFile, delimiter=',', quotechar='"', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
+            issueWriter.writerow(['Repository','Issue ID', 'Issue Title' 'Issue Author', 'Issue Body', 'Created At'])
+            for i in range(numIssues):
+                issueWriter.writerow([name, issueID[i], issueTitle[i].encode("utf-8"), issueAuthor[i], issueBody[i].encode("utf-8"), dateIssueCreated[i]])
+
+    #make space for memory
+    del issueID[:]
+    del issueTitle[:]
+    del issueAuthor[:]
+    del issueBody[:]
+    del dateIssueCreated[:]
+else:
+    #releases
+    releaseLink = githublink + "/releases?pages=1"
+    if DEBUG:
+        print(releaseLink)
+
     i = 0
-    with open('githubReleaseInformation.csv', mode='w') as releaseFile:
-        releaseWriter = csv.writer(releaseFile, delimiter=',', quotechar='"', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
-        releaseWriter.writerow(['Github Name','Node ID', 'ID', 'Author', 'Name', 'Date Published'])
-        for i in range(numRelease):
-            releaseWriter.writerow([name, releaseNodeID[i], releaseNumber[i], releaseAuthors[i], releaseName[i], releasePublishDate[i]])
+    releaseData = []
+    releaseAuthors = []
+    releaseName = []
+    releaseNodeID = []
+    releaseNumber = []
+    hasReleases = True
+    releasePublishDate = []
+    releasePageIncrement = 2
 
-del releaseAuthors[:]
-del releaseName[:]
-del releaseNodeID[:]
-del releaseNumber[:]
-del releasePublishDate[:]
+    with urllib.request.urlopen(Request(releaseLink, data=None, headers=testHeader, origin_req_host=None, unverifiable=False, method=None)) as url:
+        releaseData = json.loads(url.read().decode())
+
+    if len(releaseData) == 0:
+        hasReleases = False
+    else:
+        numRelease = len(releaseData)
+
+    if hasReleases:
+        while len(releaseData) != 30: 
+            i = 0
+            while i < len(releaseData):
+                releaseAuthors.append(releaseData[i]['author']['login'])
+                releaseName.append(releaseData[i]['name'])
+                releaseNodeID.append(releaseData[i]['node_id'])
+                releaseNumber.append(releaseData[i]['id'])
+                releasePublishDate.append(releaseData[i]['published_at'])
+                i+=1
+
+            releaseLink = githublink + "/releases?page=" + str(releasePageIncrement)
+            releasePageIncrement+=1
+
+            with urllib.request.urlopen(releaseLink) as url:
+                releaseData = json.loads(url.read().decode())
+            numRelease+=len(releaseData)
+
+    #release information
+    if WRITE and hasReleases:
+        i = 0
+        with open('githubReleaseInformation.csv', mode='w') as releaseFile:
+            releaseWriter = csv.writer(releaseFile, delimiter=',', quotechar='"', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
+            releaseWriter.writerow(['Github Name','Node ID', 'ID', 'Author', 'Name', 'Date Published'])
+            for i in range(numRelease):
+                releaseWriter.writerow([name, releaseNodeID[i], releaseNumber[i], releaseAuthors[i], releaseName[i], releasePublishDate[i]])
+
+    #clear up release memory
+    del releaseAuthors[:]
+    del releaseName[:]
+    del releaseNodeID[:]
+    del releaseNumber[:]
+    del releasePublishDate[:]
 
 #general information
 if WRITE:
