@@ -20,12 +20,15 @@ testHeader = {'Authorization': 'token'  + githubToken}
 githublink = "https://api.github.com/repos/" + githubRepo
 
 if issueOrRelease == "issue":
-    ISSUE = 1
+    issue = 1
 elif issueOrRelease == "release":
-    ISSUE = 0
+    issue = 0
 else:
     print("No choice of issue or release given")
     exit()
+
+if DEBUG:
+    print(str(issue))
 
 if DEBUG:
     print("concatenated githublink: " + githublink)
@@ -40,7 +43,6 @@ updateDate = data['updated_at']
 numStars = data['stargazers_count']
 numWatchers = data['watchers_count']
 numForks = data['forks_count']
-numIssues = data['open_issues']
 license = data['license']
 hasLicense = True
 if license is None:
@@ -50,8 +52,16 @@ else:
     licenseName = data['license']['name']
 githubURL = data['url']
 pushedDate = data['pushed_at']
-numIssues = data['open_issues_count'] 
 numRelease = 0
+
+issueLink = "https://api.github.com/search/issues?q=repo:" + githubRepo + "+type:issue"
+if DEBUG:
+    print(issueLink)
+
+#get the total number of issues
+with urllib.request.urlopen(Request(issueLink, data=None, headers=testHeader, origin_req_host=None, unverifiable=False, method=None)) as url:
+    issueData = json.loads(url.read().decode())
+numIssues = issueData['total_count']
 
 if DEBUG:
     print("\tname: " + name)
@@ -67,22 +77,25 @@ if DEBUG:
         print("\tLisense:" + licenseName)
     print("\tlatest commit: " + pushedDate)
 
-if ISSUE:
-    issueLink = githublink + "/issues?page=1"
-    if DEBUG:
-        print(issueLink)
-
+if DEBUG:
+    print("Issue number: " + str(issue))
+if issue:
+    #get issues
+    issueLink = "https://api.github.com/repos/" + githubRepo + "/issues?state=all&page=1"
     with urllib.request.urlopen(Request(issueLink, data=None, headers=testHeader, origin_req_host=None, unverifiable=False, method=None)) as url:
         issueData = json.loads(url.read().decode())
-
     issueBody = []
     issueTitle = []
     dateIssueCreated = []
     issueID = []
     issueAuthor = []
-    issuePageIncrement = 2 #this variable is used to traverse the pages for issues
+    issueState = []
+    issuePageIncrement = 2
+    accumulatedIssues = len(issueData)
+    print("og accumulated issues:" + str(accumulatedIssues))
+    print("new num issues: " + str(numIssues))
 
-    while len(issueID) != numIssues:
+    while accumulatedIssues != numIssues:
         i = 0
         while i < len(issueData):
             issueAuthor.append(issueData[i]['user']['login'])
@@ -90,13 +103,18 @@ if ISSUE:
             dateIssueCreated.append(issueData[i]['created_at'])
             issueTitle.append(issueData[i]['title'])
             issueBody.append(issueData[i]['body'])
+            issueState.append(issueData[i]['state'])
             i+=1
 
-        issueLink = githublink + "/issues?page=" + str(issuePageIncrement)
+        issueLink = "https://api.github.com/repos/" + githubRepo + "/issues?state=all&page=" +  str(issuePageIncrement)
+        print("issueLink: " + issueLink)
         issuePageIncrement+=1
 
-        with urllib.request.urlopen(issueLink) as url:
+
+        with urllib.request.urlopen(Request(issueLink, data=None, headers=testHeader, origin_req_host=None, unverifiable=False, method=None)) as url:
             issueData = json.loads(url.read().decode())
+        accumulatedIssues+=len(issueData)
+        print("acumulatedIssues:" + str(accumulatedIssues))
 
     if DEBUG:
         print("\tnumber of issues found by pagination: " + str(len(issueID)))
@@ -107,6 +125,7 @@ if ISSUE:
 
     #write issue information to CSV file
     if WRITE:
+        print("Writing Issues to CSV file.....")
         i = 0
         with open('githubIssueInformation.csv', mode='w') as issueFile:
             issueWriter = csv.writer(issueFile, delimiter=',', quotechar='"', lineterminator='\n', quoting=csv.QUOTE_MINIMAL)
